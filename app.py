@@ -1,13 +1,13 @@
 # app.py
 
 from flask import Flask, request, render_template
-from sentence_transformers.cross_encoder import CrossEncoder
+from sentence_transformers import SentenceTransformer, util
 
 app = Flask(__name__)
 
 # Load the model once when the application starts
-print("Loading Cross-Encoder model...")
-model = CrossEncoder('cross-encoder/stsb-roberta-base')
+print("Loading all-MiniLM-L6-v2 model...")
+model = SentenceTransformer('all-MiniLM-L6-v2')
 print("Model loaded successfully.")
 
 @app.route("/", methods=["GET", "POST"])
@@ -25,11 +25,15 @@ def index():
         text2 = request.form.get("text2", "").strip()
         
         if text1 and text2:
-            raw_score = model.predict((text1, text2), show_progress_bar=False)
-            score = f"{float(raw_score):.4f}"
+            # --- KEY CHANGE: Prediction logic for Sentence-Transformers ---
+            # 1. Encode both texts into embeddings
+            embeddings = model.encode([text1, text2], convert_to_tensor=True)
+            # 2. Compute cosine similarity
+            cosine_score = util.cos_sim(embeddings[0], embeddings[1])
+            score = f"{cosine_score.item():.4f}"
             
-    # This will look for a file named "index.html" inside a "templates" folder.
     return render_template("index.html", similarity_score=score, text1=text1, text2=text2)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
