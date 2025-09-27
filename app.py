@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Load the model once when the application starts
 print("Loading Cross-Encoder model...")
-model = CrossEncoder('ccross-encoder/stsb-roberta-base')
+model = CrossEncoder('cross-encoder/stsb-roberta-base')
 print("Model loaded successfully.")
 
 @app.route("/", methods=["GET", "POST"])
